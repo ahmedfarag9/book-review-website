@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, session
+from flask import Flask, session, render_template, request
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -21,6 +21,64 @@ engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
 
-@app.route("/")
+@app.route("/", methods=["POST", "GET"])
 def index():
-    return "Project 1: TODO"
+    return render_template("index.html")
+
+@app.route("/signup", methods=["POST"])
+def signup():
+    return render_template("index-1.html")
+    
+@app.route("/signin", methods=["POST"])
+def signin():
+    return render_template("index-2.html")
+
+@app.route("/signingup", methods=["POST"])
+def signingup():
+
+    """ Sign up """
+    
+    # Create new username and new psw
+    newusername = request.form.get("newusername")
+    newpassword = request.form.get("newpassword")
+
+    if db.execute("SELECT * FROM users WHERE username = :username", {"username": newusername}).rowcount != 0:
+        return render_template("error.html", message="username is already taken")
+  
+    
+    db.execute("INSERT INTO users (username,password) VALUES (:newusername, :newpassword)",
+            {"newusername": newusername, "newpassword": newpassword})
+
+    db.commit()
+
+    return render_template("success.html", message="You have signed up successfully")
+
+
+@app.route("/signingin", methods=["POST"])
+def signingin():
+
+    """ Sign in """
+    
+    # Check username and psw
+    username = request.form.get("username")
+    password = request.form.get("password")
+
+
+    if db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).rowcount == 0:
+        return render_template("error.html", message="The username provided did not match our records. Please re-enter and try again.")
+
+    else:
+        if db.execute("SELECT * FROM users WHERE password = :password", {"password": password}).rowcount == 0:
+            return render_template("error.html", message="The password you provided did not match our records. Please re-enter and try again.")
+
+    db.commit()
+
+
+    return render_template("success2.html", message="You have signed in successfully")
+
+@app.route("/homepage", methods=["POST"])
+def homepage():
+
+    """ Website homepage """
+
+    return render_template("success3.html", message="Welcome to Book Review, this is your homepage")
