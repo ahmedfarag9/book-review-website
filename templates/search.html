@@ -5,14 +5,21 @@
 {% endblock %}
 
 {% block body %}
-
-    {{ message }}
+    
 
     <form action="{{ url_for('index') }}" method="post">
+
+        <br><br><br>
+        <h3>Search results</h3>
+        <br><br><br><br><br><br>
+
+
 
         <div class="form-group">
             <button class="btn btn-primary">Sign out</button>
         </div>
+
+    </form>
 
     
 {% endblock %}

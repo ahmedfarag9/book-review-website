@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Success!
+{% endblock %}
+
+{% block body %}
+
+
+
+    <form action="{{ url_for('search') }}" method="post">
+
+
+            <div class="form-group">
+
+                <br><br>
+                <h3>Welcome to Book Review.<br>This is your homepage, you can search for a book by it's ISBN number, title or author.</h3>
+                <br>
+        
+                <input class="form-control" name="search" placeholder="Search by"><br>
+                <input type="radio" name="gender" value="title" checked> Title<br>
+                <input type="radio" name="gender" value="isbn"> Isbn<br>
+                <input type="radio" name="gender" value="author"> Author<br>  
+                <br>
+                <input type="submit" value="Submit">
+                <br><br><br><br><br><br><br><br><br>
+                    
+
+            </div>
+
+
+
+    </form>
+
+    
+    <form action="{{ url_for('index') }}" method="post">
+
+
+        <div class="form-group">
+            <button class="btn btn-primary">Sign out</button>
+        </div>
+
+    </form>
+
+
+{% endblock %}
