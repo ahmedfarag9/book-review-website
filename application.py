@@ -27,11 +27,11 @@ def index():
 
 @app.route("/signup", methods=["POST"])
 def signup():
-    return render_template("index-1.html")
+    return render_template("signup.html")
     
 @app.route("/signin", methods=["POST"])
 def signin():
-    return render_template("index-2.html")
+    return render_template("signin.html")
 
 @app.route("/signingup", methods=["POST"])
 def signingup():
@@ -51,7 +51,7 @@ def signingup():
 
     db.commit()
 
-    return render_template("success.html", message="You have signed up successfully")
+    return render_template("signingup.html")
 
 
 @app.route("/signingin", methods=["POST"])
@@ -74,11 +74,18 @@ def signingin():
     db.commit()
 
 
-    return render_template("success2.html", message="You have signed in successfully")
+    return render_template("signingin.html")
 
 @app.route("/homepage", methods=["POST"])
 def homepage():
 
     """ Website homepage """
 
-    return render_template("success3.html", message="Welcome to Book Review, this is your homepage")
+
+    return render_template("homepage.html")
+
+@app.route("/search",methods=["POST"])
+def search():
+
+    return render_template("search.html")
+        
