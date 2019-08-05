@@ -1,28 +1,30 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Flights
+    Book-review
 {% endblock %}
 
 {% block body %}
-    <h1>Book a Flight</h1>
+    <h1>Welcome to Book-review </h1>
 
-    <form action="{{ url_for('book') }}" method="post">
+    <h2>A website in which you can search for books, rate them and write reviews about them.</h2>
+
+    <h3>Sign up or Sign in</h3>
+
+
+    <form action="{{ url_for('signup') }}" method="post">
 
         <div class="form-group">
-            <select class="form-control" name="flight_id">
-                {% for flight in flights %}
-                    <option value="{{ flight.id }}">{{ flight.origin }} to {{ flight.destination }}</option>
-                {% endfor %}
-            </select>
+            <button class="btn btn-primary">Sigh up</button>
         </div>
 
-        <div class="form-group">
-            <input class="form-control" name="name" placeholder="Passenger Name">
-        </div>
+    </form>
+
+
+    <form action="{{ url_for('signin') }}" method="post">
 
         <div class="form-group">
-            <button class="btn btn-primary">Book Flight</button>
+            <button class="btn btn-primary">Sign in</button>
         </div>
 
     </form>
