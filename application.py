@@ -23,7 +23,20 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/", methods=["POST", "GET"])
 def index():
+
+#    session["newusername"] = None
+#    session["newpassword"] = None
+#    session["username"] = None
+#    session["password"] = None
+#    session.clear()
+    if session:
+        session.clear()
+
+        for key in session.keys():
+            session.pop(key)
+
     return render_template("index.html")
+
 
 @app.route("/signup", methods=["POST"])
 def signup():
@@ -39,15 +52,15 @@ def signingup():
     """ Sign up """
     
     # Create new username and new psw
-    newusername = request.form.get("newusername")
-    newpassword = request.form.get("newpassword")
+    session["newusername"] = request.form.get("newusername")
+    session["newpassword"] = request.form.get("newpassword")
 
-    if db.execute("SELECT * FROM users WHERE username = :username", {"username": newusername}).rowcount != 0:
+    if db.execute("SELECT * FROM users WHERE username = :username", {"username": session["newusername"]}).rowcount != 0:
         return render_template("error.html", message="username is already taken")
   
     
     db.execute("INSERT INTO users (username,password) VALUES (:newusername, :newpassword)",
-            {"newusername": newusername, "newpassword": newpassword})
+            {"newusername": session["newusername"], "newpassword": session["newpassword"]})
 
     db.commit()
 
@@ -60,15 +73,15 @@ def signingin():
     """ Sign in """
     
     # Check username and psw
-    username = request.form.get("username")
-    password = request.form.get("password")
+    session["username"] = request.form.get("username")
+    session["password"] = request.form.get("password")
 
 
-    if db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).rowcount == 0:
+    if db.execute("SELECT * FROM users WHERE username = :username", {"username":  session["username"]}).rowcount == 0:
         return render_template("error.html", message="The username provided did not match our records. Please re-enter and try again.")
 
     else:
-        if db.execute("SELECT * FROM users WHERE password = :password", {"password": password}).rowcount == 0:
+        if db.execute("SELECT * FROM users WHERE password = :password", {"password": session["password"]}).rowcount == 0:
             return render_template("error.html", message="The password you provided did not match our records. Please re-enter and try again.")
 
     db.commit()
@@ -86,6 +99,8 @@ def homepage():
 
 @app.route("/search",methods=["POST"])
 def search():
+
+    
 
     return render_template("search.html")
         
