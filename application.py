@@ -80,8 +80,7 @@ def signingin():
     if db.execute("SELECT * FROM users WHERE username = :username", {"username":  session["username"]}).rowcount == 0:
         return render_template("error.html", message="The username provided did not match our records. Please re-enter and try again.")
 
-    else:
-        if db.execute("SELECT * FROM users WHERE password = :password", {"password": session["password"]}).rowcount == 0:
+    if db.execute("SELECT * FROM users WHERE password = :password", {"password": session["password"]}).rowcount == 0:
             return render_template("error.html", message="The password you provided did not match our records. Please re-enter and try again.")
 
     db.commit()
@@ -100,7 +99,64 @@ def homepage():
 @app.route("/search",methods=["POST"])
 def search():
 
+        # Search for a book.
+
+    # Get form information.
+    session["searchquery"] = request.form.get("search")
+    session["option"] = request.form.get('option')
+    
+    if session["option"] == "title":
     
 
-    return render_template("search.html")
+        try:
+            session["title"] = str(session["searchquery"])
+            
+        except ValueError:
+            return render_template("error.html", message="Please enter a valid book's title.")
+
+
+        if session["title"].isspace() is True:
+            return render_template("error.html", message="The search box is empty. Please enter a book's title.")
+
+        if session["title"] == "":
+            return render_template("error.html", message="The search box is empty. Please enter a book's title.")
+
+
+        return render_template("search.html", message=session["title"] )
+
+
+    elif session["option"] == "isbn":
+
+        try:
+            session["isbn"] = str(session["searchquery"])
+
+        except ValueError:
+            return render_template("error.html", message="Please enter a valid book's isbn number.")
+            
+
+        if session["isbn"].isspace() is True:
+            return render_template("error.html", message="The search box is empty. Please enter a book's isbn number.")
         
+        if session["isbn"] == "":
+            return render_template("error.html", message="The search box is empty. Please enter a book's isbn number.")
+
+
+        return render_template("search.html", message=session["isbn"] )
+
+
+    else:
+        try:
+            session["author"] = str(session["searchquery"])
+
+        except ValueError:
+            return render_template("error.html", message="Please enter a valid author's name.")
+
+
+        if session["author"].isspace() is True:
+            return render_template("error.html", message="The search box is empty. Please enter an author's name.")
+
+        if session["author"] == "":
+            return render_template("error.html", message="The search box is empty. Please enter an author's name.")
+
+
+        return render_template("search.html", message=session["author"] )
