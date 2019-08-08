@@ -9,11 +9,27 @@
 
     <form action="{{ url_for('index') }}" method="post">
 
-        <br><br><br>
-        {{ message }}
-        
+        <br><br><br>        
         <h3>Search results</h3>
-        <br><br><br><br><br><br>
+        <br>
+
+
+        <ul>
+            {% for result in results %}
+
+                <li>
+                    <a href="{{ url_for('bookpage', book_id=result.id) }}">
+                        {{ result.title }}
+                    </a>
+                </li>
+                     
+            {% else %}
+                <li>No results.</li>
+            {% endfor %}
+        </ul>
+                
+        <br><br><br><br><br><br><br><br><br><br>
+        <br><br><br>
 
 
 

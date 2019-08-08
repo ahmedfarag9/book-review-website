@@ -99,7 +99,7 @@ def homepage():
 @app.route("/search",methods=["POST"])
 def search():
 
-        # Search for a book.
+    # Search for a book.
 
     # Get form information.
     session["searchquery"] = request.form.get("search")
@@ -107,6 +107,7 @@ def search():
     
     if session["option"] == "title":
     
+        """Search by a books's title"""
 
         try:
             session["title"] = str(session["searchquery"])
@@ -122,11 +123,21 @@ def search():
             return render_template("error.html", message="The search box is empty. Please enter a book's title.")
 
 
-        return render_template("search.html", message=session["title"] )
+        session["title"] = "%" + session["title"] + "%"
+        
+        session["searchresults"] = db.execute("SELECT * FROM books WHERE title SIMILAR TO :title", {"title": session["title"]}).fetchall()
+        
+        db.commit()
+
+        return render_template("search.html", results = session["searchresults"] )
+
+
+
 
 
     elif session["option"] == "isbn":
-
+        """Search by a books's isbn number"""
+        
         try:
             session["isbn"] = str(session["searchquery"])
 
@@ -140,11 +151,20 @@ def search():
         if session["isbn"] == "":
             return render_template("error.html", message="The search box is empty. Please enter a book's isbn number.")
 
+        session["isbn"] = "%" + session["isbn"] + "%"
+        
 
-        return render_template("search.html", message=session["isbn"] )
+
+        session["searchresults"] = db.execute("SELECT * FROM books WHERE isbn SIMILAR TO :isbn", {"isbn": session["isbn"]}).fetchall()
+        
+        db.commit()
+
+        return render_template("search.html", results = session["searchresults"] )
 
 
     else:
+        """Search by an author's name"""
+
         try:
             session["author"] = str(session["searchquery"])
 
@@ -159,4 +179,23 @@ def search():
             return render_template("error.html", message="The search box is empty. Please enter an author's name.")
 
 
-        return render_template("search.html", message=session["author"] )
+        session["author"] = "%" + session["author"] + "%"
+        
+        session["searchresults"] = db.execute("SELECT * FROM books WHERE author SIMILAR TO :author", {"author": session["author"]}).fetchall()
+        
+        db.commit()
+
+        return render_template("search.html", results = session["searchresults"] )
+
+
+
+
+@app.route("/bookpage/<int:book_id>")
+def bookpage(book_id):
+
+    #show info about the chosen book
+
+
+
+
+    return render_template("bookpage.html", message=book_id)
