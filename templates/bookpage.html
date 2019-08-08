@@ -10,14 +10,21 @@
     <form action="{{ url_for('index') }}" method="post">
 
         <br><br><br>        
-        <h3>Book Page</h3>
+        <h3>Book Details</h3>
         <br><br><br>        
 
-        {{ message }}
+        <ul>
+
+                    <li>Id: {{ book.id }}</li>
+                    <li>isbn: {{ book.isbn }}</li>
+                    <li>title: {{ book.title }}</li>
+                    <li>author: {{ book.author }}</li>
+                    <li>year: {{ book.year }}</li>
+                                     
+        </ul>
 
                 
         <br><br><br><br><br><br><br><br><br><br>
-        <br><br><br><br><br>
 
 
         <div class="form-group">

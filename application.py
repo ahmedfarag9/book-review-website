@@ -194,8 +194,11 @@ def search():
 def bookpage(book_id):
 
     #show info about the chosen book
+    session["book_id"] = book_id
+
+    session["book"] = db.execute("SELECT * FROM books WHERE id = :id", {"id": session["book_id"]}).fetchone()
+    
+    db.commit()
 
 
-
-
-    return render_template("bookpage.html", message=book_id)
+    return render_template("bookpage.html", book=session["book"])
