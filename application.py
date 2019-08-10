@@ -83,6 +83,10 @@ def signingin():
     if db.execute("SELECT * FROM users WHERE password = :password", {"password": session["password"]}).rowcount == 0:
             return render_template("error.html", message="The password you provided did not match our records. Please re-enter and try again.")
 
+    session["user"] =  db.execute("SELECT * FROM users WHERE username = :username", {"username":  session["username"]}).fetchone()  
+
+    session["id"] = session["user"].id
+
     db.commit()
 
 
@@ -103,7 +107,7 @@ def search():
 
     # Get form information.
     session["searchquery"] = request.form.get("search")
-    session["option"] = request.form.get('option')
+    session["option"] = request.form.get("option")
     
     if session["option"] == "title":
     
@@ -190,15 +194,64 @@ def search():
 
 
 
-@app.route("/bookpage/<int:book_id>")
+@app.route("/bookpage/<int:book_id>",methods=["POST", "GET"])
 def bookpage(book_id):
 
     #show info about the chosen book
     session["book_id"] = book_id
 
     session["book"] = db.execute("SELECT * FROM books WHERE id = :id", {"id": session["book_id"]}).fetchone()
+
+    session["reviews"] = db.execute("SELECT reviews.id, review, rate, user_id, book_id, username FROM reviews JOIN users ON users.id = reviews.user_id WHERE book_id = :book_id" , {"book_id": session["book_id"]}).fetchall()
     
+    session["rates"] = db.execute("SELECT rate FROM reviews WHERE book_id = :book_id", {"book_id": session["book_id"]}).fetchall()
+
+
+    #Submit your review
+    print(request.form.get("btn"))
+
+    if request.form.get("btn") == "Clicked":
+
+
+        if db.execute("SELECT * FROM reviews WHERE user_id = :user_id", {"user_id": session["id"]}).rowcount == 0:
+
+
+            session["newreview"] = request.form.get("newreview")
+            session["rate"] = request.form.get("rate")
+                
+
+            try:
+                session["rate"] = int(session["rate"])
+                
+            except ValueError:
+                return render_template("error.html", message="Please rate the book from 1 to 5 stars.")
+
+            try:
+                session["newreview"] = str(session["newreview"])
+                
+            except ValueError:
+                return render_template("error.html", message="Please enter a review.")
+
+
+            if session["newreview"].isspace() is True:
+                return render_template("error.html", message="The review box is empty. Please enter a review.")
+
+            if session["newreview"] == "":
+                return render_template("error.html", message="The review box is empty. Please enter a review.")
+
+
+            db.execute("INSERT INTO reviews (review,rate,user_id,book_id) VALUES (:review, :rate, :user_id, :book_id)",
+            {"review": session["newreview"], "rate": session["rate"], "user_id": session["id"], "book_id": session["book_id"]})
+
+            db.commit()
+
+            return render_template("success.html", book=session["book"], message="Your review was submited successfuly")
+
+            
+        else:
+
+            return render_template("review-error.html", book=session["book"], message="You've already submited a review")
+
+
     db.commit()
-
-
-    return render_template("bookpage.html", book=session["book"])
+    return render_template("bookpage.html", book=session["book"], reviews=session["reviews"])
