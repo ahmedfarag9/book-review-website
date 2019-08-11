@@ -4,6 +4,7 @@ from flask import Flask, session, render_template, request
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+import requests
 
 app = Flask(__name__)
 
@@ -193,7 +194,6 @@ def search():
 
 
 
-
 @app.route("/bookpage/<int:book_id>",methods=["POST", "GET"])
 def bookpage(book_id):
 
@@ -202,14 +202,22 @@ def bookpage(book_id):
 
     session["book"] = db.execute("SELECT * FROM books WHERE id = :id", {"id": session["book_id"]}).fetchone()
 
+    session["isbn"] = session["book"].isbn
+
     session["reviews"] = db.execute("SELECT reviews.id, review, rate, user_id, book_id, username FROM reviews JOIN users ON users.id = reviews.user_id WHERE book_id = :book_id" , {"book_id": session["book_id"]}).fetchall()
     
     session["rates"] = db.execute("SELECT rate FROM reviews WHERE book_id = :book_id", {"book_id": session["book_id"]}).fetchall()
 
+    session["res"] = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "ssbeJ9OASssx1U3OvHMywQ", "isbns": session["isbn"]})
+
+    session["data"] = session["res"].json()
+
+    session["average_rating"] = session["data"]['books'][0]['average_rating']
+
+    session["work_ratings_count"] = session["data"]['books'][0]['work_ratings_count']
+
 
     #Submit your review
-    print(request.form.get("btn"))
-
     if request.form.get("btn") == "Clicked":
 
 
@@ -254,4 +262,4 @@ def bookpage(book_id):
 
 
     db.commit()
-    return render_template("bookpage.html", book=session["book"], reviews=session["reviews"])
+    return render_template("bookpage.html", book=session["book"], reviews=session["reviews"], average_rating = session["average_rating"], work_ratings_count = session["work_ratings_count"] )

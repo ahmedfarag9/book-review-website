@@ -69,6 +69,8 @@
                         <li>title: {{ book.title }}</li>
                         <li>author: {{ book.author }}</li>
                         <li>year: {{ book.year }}</li>
+                        <li>average rating on Goodreads: {{ average_rating }}</li>
+                        <li>number of ratings on Goodreads: {{ work_ratings_count }}</li>
                                         
             </ul>
             <br><br>
@@ -102,16 +104,16 @@
                 <div class="form-group">
                     <button class="btn btn-primary" name="btn" value="Clicked" >Submit</button>                                            
                 </div>
-
+                <br>
             
                 <section>
         
                     {% for review in reviews %}
-                    
+                        <br>                    
                         <div class="review">
-                    
+                            
                             <h3>{{ review.username }}</h3>
-                            <h4>Rate: {{ review.rate }}</h4>
+                            <p>Rate: {{ review.rate }}</p>
                             <p>Review: {{ review.review }}</p>
                         </div>
         
