@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, session, render_template, request
+from flask import Flask, session, render_template, jsonify, request
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -196,6 +196,7 @@ def search():
 
 @app.route("/bookpage/<int:book_id>",methods=["POST", "GET"])
 def bookpage(book_id):
+    
 
     #show info about the chosen book
     session["book_id"] = book_id
@@ -263,3 +264,39 @@ def bookpage(book_id):
 
     db.commit()
     return render_template("bookpage.html", book=session["book"], reviews=session["reviews"], average_rating = session["average_rating"], work_ratings_count = session["work_ratings_count"] )
+
+
+
+
+@app.route("/api/<book_isbn>")
+def book_api(book_isbn):
+    """Return details about a single book."""
+
+    # Make sure the book's isbn exists.
+    session["api_book"] = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": book_isbn}).fetchone()
+    if session["api_book"] is None:
+        return jsonify({"error": "Invalid book_isbn"}), 404
+
+    session["api_review_count"] = str(db.execute("SELECT id FROM reviews ORDER BY id DESC LIMIT 1").fetchone())   
+    session["average_score"] = str(db.execute("SELECT to_char(AVG(rate), '99999999999999999D99') AS average_rate FROM reviews").fetchall())
+
+    db.commit()
+
+
+    x = session["average_score"].split("'")
+    y = str(x[1])
+    session["average_score"] = float(y.strip())
+
+
+    session["api_review_count"] = int(''.join(e for e in session["api_review_count"] if e.isalnum()))
+
+    # return all info about the book.
+
+    return jsonify({
+            "title": session["api_book"].title,
+            "author": session["api_book"].author,
+            "year": int(session["api_book"].year),
+            "isbn": session["api_book"].isbn,
+            "review_count": session["api_review_count"],
+            "average_score": session["average_score"]
+    })

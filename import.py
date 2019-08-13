@@ -14,6 +14,13 @@ def main():
     db.execute("CREATE TABLE books ( id SERIAL PRIMARY KEY, isbn VARCHAR NOT NULL, title VARCHAR NOT NULL, author VARCHAR NOT NULL, year INTEGER NOT NULL  );")
     print("Created books table in database")
 
+    db.execute("CREATE TABLE users ( id SERIAL PRIMARY KEY, username VARCHAR NOT NULL, password VARCHAR NOT NULL );")
+    print("Created users table in database")
+
+    db.execute("CREATE TABLE reviews ( id SERIAL PRIMARY KEY, review VARCHAR NOT NULL, rate INTEGER NOT NULL, user_id INTEGER REFERENCES users, book_id INTEGER REFERENCES books );")
+    print("Created reviews table in database")
+
+    
     f = open("books.csv")
     reader = csv.reader(f)
     x = 1
@@ -23,13 +30,6 @@ def main():
         print(x)
         x += 1
     print("Added info about all books")
-
-
-    db.execute("CREATE TABLE users ( id SERIAL PRIMARY KEY, username VARCHAR NOT NULL, password VARCHAR NOT NULL );")
-    print("Created users table in database")
-
-    db.execute("CREATE TABLE reviews ( id SERIAL PRIMARY KEY, review VARCHAR NOT NULL, rate INTEGER NOT NULL, user_id INTEGER REFERENCES users, book_id INTEGER REFERENCES books );")
-    print("Created reviews table in database")
 
 
     db.commit()
