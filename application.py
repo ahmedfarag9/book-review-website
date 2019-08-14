@@ -24,12 +24,9 @@ db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/", methods=["POST", "GET"])
 def index():
+    """ Main route which runs first when user access the website """
 
-#    session["newusername"] = None
-#    session["newpassword"] = None
-#    session["username"] = None
-#    session["password"] = None
-#    session.clear()
+    # Make sure all previous sessions data is removed
     if session:
         session.clear()
 
@@ -41,27 +38,31 @@ def index():
 
 @app.route("/signup", methods=["POST"])
 def signup():
+    """ Take a new user to the signup page """
+
     return render_template("signup.html")
     
 @app.route("/signin", methods=["POST"])
 def signin():
+    """ Take user to the sign in page to sign in using his username and password """
+
     return render_template("signin.html")
 
 @app.route("/signingup", methods=["POST"])
 def signingup():
-
-    """ Sign up """
+    """ Take username and password and save them in database  """
     
     # Create new username and new psw
-    session["newusername"] = request.form.get("newusername")
-    session["newpassword"] = request.form.get("newpassword")
+    session["new_username"] = request.form.get("new_username")
+    session["new_password"] = request.form.get("new_password")
 
-    if db.execute("SELECT * FROM users WHERE username = :username", {"username": session["newusername"]}).rowcount != 0:
+    # Check for input errors
+    if db.execute("SELECT * FROM users WHERE username = :username", {"username": session["new_username"]}).rowcount != 0:
         return render_template("error.html", message="username is already taken")
   
-    
-    db.execute("INSERT INTO users (username,password) VALUES (:newusername, :newpassword)",
-            {"newusername": session["newusername"], "newpassword": session["newpassword"]})
+    # Save info into database
+    db.execute("INSERT INTO users (username,password) VALUES (:new_username, :new_password)",
+            {"new_username": session["new_username"], "new_password": session["new_password"]})
 
     db.commit()
 
@@ -70,14 +71,13 @@ def signingup():
 
 @app.route("/signingin", methods=["POST"])
 def signingin():
-
-    """ Sign in """
+    """ Check whether username and password are correct or not """
     
     # Check username and psw
     session["username"] = request.form.get("username")
     session["password"] = request.form.get("password")
 
-
+    # Check for input errors
     if db.execute("SELECT * FROM users WHERE username = :username", {"username":  session["username"]}).rowcount == 0:
         return render_template("error.html", message="The username provided did not match our records. Please re-enter and try again.")
 
@@ -95,27 +95,24 @@ def signingin():
 
 @app.route("/homepage", methods=["POST"])
 def homepage():
-
-    """ Website homepage """
-
+    """ simple Website homepage """
 
     return render_template("homepage.html")
 
 @app.route("/search",methods=["POST"])
 def search():
+    """ Search for a book """
 
-    # Search for a book.
-
-    # Get form information.
-    session["searchquery"] = request.form.get("search")
+    # Get form information
+    session["search_query"] = request.form.get("search")
     session["option"] = request.form.get("option")
     
-    if session["option"] == "title":
-    
-        """Search by a books's title"""
+    # Search by book title
+    if session["option"] == "title":    
 
+        # Check for input errors
         try:
-            session["title"] = str(session["searchquery"])
+            session["title"] = str(session["search_query"])
             
         except ValueError:
             return render_template("error.html", message="Please enter a valid book's title.")
@@ -127,24 +124,22 @@ def search():
         if session["title"] == "":
             return render_template("error.html", message="The search box is empty. Please enter a book's title.")
 
-
+        # Save data to database
         session["title"] = "%" + session["title"] + "%"
         
-        session["searchresults"] = db.execute("SELECT * FROM books WHERE title SIMILAR TO :title", {"title": session["title"]}).fetchall()
+        session["search_results"] = db.execute("SELECT * FROM books WHERE title SIMILAR TO :title", {"title": session["title"]}).fetchall()
         
         db.commit()
 
-        return render_template("search.html", results = session["searchresults"] )
+        return render_template("search.html", results = session["search_results"])
 
 
-
-
-
+    # Search by book isbn number
     elif session["option"] == "isbn":
-        """Search by a books's isbn number"""
-        
+
+        # Check for input errors        
         try:
-            session["isbn"] = str(session["searchquery"])
+            session["isbn"] = str(session["search_query"])
 
         except ValueError:
             return render_template("error.html", message="Please enter a valid book's isbn number.")
@@ -156,22 +151,22 @@ def search():
         if session["isbn"] == "":
             return render_template("error.html", message="The search box is empty. Please enter a book's isbn number.")
 
+        # Save data to database
         session["isbn"] = "%" + session["isbn"] + "%"
         
 
-
-        session["searchresults"] = db.execute("SELECT * FROM books WHERE isbn SIMILAR TO :isbn", {"isbn": session["isbn"]}).fetchall()
+        session["search_results"] = db.execute("SELECT * FROM books WHERE isbn SIMILAR TO :isbn", {"isbn": session["isbn"]}).fetchall()
         
         db.commit()
 
-        return render_template("search.html", results = session["searchresults"] )
+        return render_template("search.html", results = session["search_results"] )
 
-
+    # Search by author name
     else:
-        """Search by an author's name"""
 
+        # Check for input errors
         try:
-            session["author"] = str(session["searchquery"])
+            session["author"] = str(session["search_query"])
 
         except ValueError:
             return render_template("error.html", message="Please enter a valid author's name.")
@@ -183,22 +178,21 @@ def search():
         if session["author"] == "":
             return render_template("error.html", message="The search box is empty. Please enter an author's name.")
 
-
+        # Save data to database
         session["author"] = "%" + session["author"] + "%"
         
-        session["searchresults"] = db.execute("SELECT * FROM books WHERE author SIMILAR TO :author", {"author": session["author"]}).fetchall()
+        session["search_results"] = db.execute("SELECT * FROM books WHERE author SIMILAR TO :author", {"author": session["author"]}).fetchall()
         
         db.commit()
 
-        return render_template("search.html", results = session["searchresults"] )
-
+        return render_template("search.html", results = session["search_results"] )
 
 
 @app.route("/bookpage/<int:book_id>",methods=["POST", "GET"])
 def bookpage(book_id):
-    
+    """ Show info about the chosen book and submiting reviews """
 
-    #show info about the chosen book
+    # Get info about book from database
     session["book_id"] = book_id
 
     session["book"] = db.execute("SELECT * FROM books WHERE id = :id", {"id": session["book_id"]}).fetchone()
@@ -209,6 +203,7 @@ def bookpage(book_id):
     
     session["rates"] = db.execute("SELECT rate FROM reviews WHERE book_id = :book_id", {"book_id": session["book_id"]}).fetchall()
 
+    # Get info about book from goodreads
     session["res"] = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "ssbeJ9OASssx1U3OvHMywQ", "isbns": session["isbn"]})
 
     session["data"] = session["res"].json()
@@ -218,17 +213,17 @@ def bookpage(book_id):
     session["work_ratings_count"] = session["data"]['books'][0]['work_ratings_count']
 
 
-    #Submit your review
+    #Submit a review 
     if request.form.get("btn") == "Clicked":
 
-
+        # Get info about user from database
         if db.execute("SELECT * FROM reviews WHERE user_id = :user_id", {"user_id": session["id"]}).rowcount == 0:
 
-
-            session["newreview"] = request.form.get("newreview")
+            # Get review and rate form user
+            session["new_review"] = request.form.get("new_review")
             session["rate"] = request.form.get("rate")
-                
-
+            
+            # Check for input errors    
             try:
                 session["rate"] = int(session["rate"])
                 
@@ -236,21 +231,21 @@ def bookpage(book_id):
                 return render_template("error.html", message="Please rate the book from 1 to 5 stars.")
 
             try:
-                session["newreview"] = str(session["newreview"])
+                session["new_review"] = str(session["new_review"])
                 
             except ValueError:
                 return render_template("error.html", message="Please enter a review.")
 
 
-            if session["newreview"].isspace() is True:
+            if session["new_review"].isspace() is True:
                 return render_template("error.html", message="The review box is empty. Please enter a review.")
 
-            if session["newreview"] == "":
+            if session["new_review"] == "":
                 return render_template("error.html", message="The review box is empty. Please enter a review.")
 
-
+            # Save data to database
             db.execute("INSERT INTO reviews (review,rate,user_id,book_id) VALUES (:review, :rate, :user_id, :book_id)",
-            {"review": session["newreview"], "rate": session["rate"], "user_id": session["id"], "book_id": session["book_id"]})
+            {"review": session["new_review"], "rate": session["rate"], "user_id": session["id"], "book_id": session["book_id"]})
 
             db.commit()
 
@@ -266,27 +261,25 @@ def bookpage(book_id):
     return render_template("bookpage.html", book=session["book"], reviews=session["reviews"], average_rating = session["average_rating"], work_ratings_count = session["work_ratings_count"] )
 
 
-
-
 @app.route("/api/<book_isbn>")
 def book_api(book_isbn):
-    """Return details about a single book."""
+    """ Return details about a single book as a json when a request is sent to the website api """
 
-    # Make sure the book's isbn exists.
+    # Make sure book isbn exists
     session["api_book"] = db.execute("SELECT * FROM books WHERE isbn = :isbn", {"isbn": book_isbn}).fetchone()
     if session["api_book"] is None:
         return jsonify({"error": "Invalid book_isbn"}), 404
 
+    # fetch data from database        
     session["api_review_count"] = str(db.execute("SELECT id FROM reviews ORDER BY id DESC LIMIT 1").fetchone())   
     session["average_score"] = str(db.execute("SELECT to_char(AVG(rate), '99999999999999999D99') AS average_rate FROM reviews").fetchall())
 
     db.commit()
 
-
-    x = session["average_score"].split("'")
-    y = str(x[1])
-    session["average_score"] = float(y.strip())
-
+    # fit data to send as json 
+    tmp = session["average_score"].split("'")
+    tmp = str(tmp[1])
+    session["average_score"] = float(tmp.strip())
 
     session["api_review_count"] = int(''.join(e for e in session["api_review_count"] if e.isalnum()))
 
