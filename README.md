@@ -47,6 +47,8 @@ up to 10,000 rows of data. Click “Provision.”
 
     cd /path to the repository
 
+    pip3 install -r requirements.txt
+
     export FLASK_APP=application.py
 
     export DATABASE_URL=Link to database
