@@ -9,4 +9,3 @@ Used Technologies/Languages
 * Flask
 * Python
 * Html and Css
-* postgre-sql
